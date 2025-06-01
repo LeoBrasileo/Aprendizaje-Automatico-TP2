@@ -1,2 +1,10 @@
-# Aprendizaje-Automatico-TP2
- Repositorio para la implementación del trabajo practico 2 de Aprendizaje Automatico
+# TP 2 de Aprendizaje Automático
+
+Materia: Aprendizaje Automático
+1er cuatrimestre 2025
+
+## Índice
+
+- [Notebook principal](py/TP2_main.ipynb)
+
+- [Informe](informe/main.pdf)
