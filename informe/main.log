@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.4.8)  1 MAY 2025 15:31
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.4.8)  1 JUN 2025 18:18
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -1117,7 +1117,7 @@ Package: inputenc 2021/02/14 v1.3d Input encoding file
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: float package is loaded.
 Package caption Info: End \AtBeginDocument code.
-<img/logo_dc.jpg, id=31, 215.6055pt x 83.5923pt>
+<img/logo_dc.jpg, id=7, 215.6055pt x 83.5923pt>
 File: img/logo_dc.jpg Graphic file (type jpg)
 <use img/logo_dc.jpg>
 Package pdftex.def Info: img/logo_dc.jpg  used on input line 162.
@@ -1150,7 +1150,7 @@ LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 1
 (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2023/04/13 v2.5m Standard LaTeX font definitions
 )
-<img/logo_uba.jpg, id=32, 225.4824pt x 231.7458pt>
+<img/logo_uba.jpg, id=8, 225.4824pt x 231.7458pt>
 File: img/logo_uba.jpg Graphic file (type jpg)
 <use img/logo_uba.jpg>
 Package pdftex.def Info: img/logo_uba.jpg  used on input line 162.
@@ -1170,17 +1170,17 @@ Underfull \hbox (badness 10000) in paragraph at lines 162--162
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texmf/fonts/enc/
 dvips/cm-super/cm-super-t1.enc} <./img/logo_dc.jpg> <./img/logo_uba.jpg>]
 (./introduccion.tex) (./desarrollo/ej1.tex
-<img/class_distr_compl.png, id=47, 455.301pt x 338.9463pt>
+<img/class_distr_compl.png, id=23, 455.301pt x 338.9463pt>
 File: img/class_distr_compl.png Graphic file (type png)
 <use img/class_distr_compl.png>
 Package pdftex.def Info: img/class_distr_compl.png  used on input line 14.
 (pdftex.def)             Requested size: 128.0374pt x 95.3129pt.
-<img/class_distr_train.png, id=49, 455.301pt x 339.669pt>
+<img/class_distr_train.png, id=25, 455.301pt x 339.669pt>
 File: img/class_distr_train.png Graphic file (type png)
 <use img/class_distr_train.png>
 Package pdftex.def Info: img/class_distr_train.png  used on input line 18.
 (pdftex.def)             Requested size: 128.0374pt x 95.51611pt.
-<img/class_distr_eval.png, id=50, 455.301pt x 339.669pt>
+<img/class_distr_eval.png, id=26, 455.301pt x 339.669pt>
 File: img/class_distr_eval.png Graphic file (type png)
 <use img/class_distr_eval.png>
 Package pdftex.def Info: img/class_distr_eval.png  used on input line 22.
@@ -1198,12 +1198,6 @@ Overfull \hbox (24.15315pt too wide) in paragraph at lines 25--38
  [][] 
  []
 
-
-Underfull \hbox (badness 1348) in paragraph at lines 82--85
-[]\T1/cmr/m/n/10 Puede observarse también en el gráfico que conseguimos el mism
-o resultado con otra combinación de
- []
-
 [3]
 
 Package caption Warning: \label without proper reference on input line 140.
@@ -1213,7 +1207,7 @@ See the caption package documentation for explanation.
 LaTeX Warning: Reference `fig:comparacion-modelos' on page 4 undefined on input
  line 129.
 
-<img/comparacion-modelos.png, id=92, 714.7503pt x 425.6703pt>
+<img/comparacion-modelos.png, id=68, 714.7503pt x 425.6703pt>
 File: img/comparacion-modelos.png Graphic file (type png)
 <use img/comparacion-modelos.png>
 Package pdftex.def Info: img/comparacion-modelos.png  used on input line 138.
@@ -1222,56 +1216,56 @@ Package pdftex.def Info: img/comparacion-modelos.png  used on input line 138.
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 ) (./desarrollo/ej4.tex [4]
-<img/complejidad_arbol.png, id=103, 617.9085pt x 379.4175pt>
+<img/complejidad_arbol.png, id=79, 714.7503pt x 426.393pt>
 File: img/complejidad_arbol.png Graphic file (type png)
 <use img/complejidad_arbol.png>
 Package pdftex.def Info: img/complejidad_arbol.png  used on input line 14.
-(pdftex.def)             Requested size: 256.07481pt x 157.23532pt.
-<img/complejidad_svm.png, id=104, 617.9085pt x 379.4175pt>
+(pdftex.def)             Requested size: 256.07481pt x 152.76616pt.
+<img/complejidad_svm.png, id=80, 714.7503pt x 426.393pt>
 File: img/complejidad_svm.png Graphic file (type png)
 <use img/complejidad_svm.png>
 Package pdftex.def Info: img/complejidad_svm.png  used on input line 17.
-(pdftex.def)             Requested size: 256.07481pt x 157.23532pt.
+(pdftex.def)             Requested size: 256.07481pt x 152.76616pt.
 
 Overfull \hbox (13.33008pt too wide) in paragraph at lines 14--18
  [][][] 
  []
 
-<img/complejidad_knn.png, id=105, 617.9085pt x 379.4175pt>
+<img/complejidad_knn.png, id=81, 714.7503pt x 426.393pt>
 File: img/complejidad_knn.png Graphic file (type png)
 <use img/complejidad_knn.png>
 Package pdftex.def Info: img/complejidad_knn.png  used on input line 23.
-(pdftex.def)             Requested size: 256.07481pt x 157.23532pt.
+(pdftex.def)             Requested size: 256.07481pt x 152.76616pt.
 [5 <./img/comparacion-modelos.png> <./img/complejidad_arbol.png> <./img/complej
 idad_svm.png> <./img/complejidad_knn.png>]
-<img/aprendizaje_arbol.png, id=120, 991.705pt x 592.2125pt>
+<img/aprendizaje_arbol.png, id=96, 991.705pt x 592.2125pt>
 File: img/aprendizaje_arbol.png Graphic file (type png)
 <use img/aprendizaje_arbol.png>
 Package pdftex.def Info: img/aprendizaje_arbol.png  used on input line 59.
 (pdftex.def)             Requested size: 230.46576pt x 137.62473pt.
-<img/aprendizaje_svm.png, id=121, 991.705pt x 592.2125pt>
+<img/aprendizaje_svm.png, id=97, 991.705pt x 592.2125pt>
 File: img/aprendizaje_svm.png Graphic file (type png)
 <use img/aprendizaje_svm.png>
 Package pdftex.def Info: img/aprendizaje_svm.png  used on input line 62.
 (pdftex.def)             Requested size: 230.46576pt x 137.62473pt.
-<img/aprendizaje_knn.png, id=122, 991.705pt x 592.2125pt>
+<img/aprendizaje_knn.png, id=98, 991.705pt x 592.2125pt>
 File: img/aprendizaje_knn.png Graphic file (type png)
 <use img/aprendizaje_knn.png>
 Package pdftex.def Info: img/aprendizaje_knn.png  used on input line 68.
 (pdftex.def)             Requested size: 230.46576pt x 137.62473pt.
-<img/aprendizaje_lda.png, id=123, 991.705pt x 592.2125pt>
+<img/aprendizaje_lda.png, id=99, 991.705pt x 592.2125pt>
 File: img/aprendizaje_lda.png Graphic file (type png)
 <use img/aprendizaje_lda.png>
 Package pdftex.def Info: img/aprendizaje_lda.png  used on input line 71.
 (pdftex.def)             Requested size: 230.46576pt x 137.62473pt.
  [6 <./img/aprendizaje_arbol.png> <./img/aprendizaje_svm.png> <./img/aprendizaj
 e_knn.png> <./img/aprendizaje_lda.png>]
-<img/rf1.png, id=137, 858.20625pt x 565.11125pt>
+<img/rf1.png, id=112, 858.20625pt x 565.11125pt>
 File: img/rf1.png Graphic file (type png)
 <use img/rf1.png>
 Package pdftex.def Info: img/rf1.png  used on input line 94.
 (pdftex.def)             Requested size: 230.46576pt x 151.75427pt.
-<img/rf2.png, id=138, 991.705pt x 592.2125pt>
+<img/rf2.png, id=113, 991.705pt x 592.2125pt>
 File: img/rf2.png Graphic file (type png)
 <use img/rf2.png>
 Package pdftex.def Info: img/rf2.png  used on input line 97.
@@ -1291,75 +1285,37 @@ LaTeX Warning: There were undefined references.
 
 LaTeX Warning: There were multiply-defined labels.
 
-
-Package rerunfilecheck Warning: File `main.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `main.out':
-(rerunfilecheck)             Before: C23A3CCF55464DD39A43A70D1E670594;978
-(rerunfilecheck)             After:  D41D8CD98F00B204E9800998ECF8427E;0.
+Package rerunfilecheck Info: File `main.out' has not changed.
+(rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 30285 strings out of 476106
- 563386 string characters out of 5793934
+ 30270 strings out of 476106
+ 563190 string characters out of 5793934
  1945975 words of memory out of 5000000
- 51684 multiletter control sequences out of 15000+600000
+ 51677 multiletter control sequences out of 15000+600000
  573165 words of font info for 75 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
  117i,14n,131p,1026b,674s stack positions out of 10000i,1000n,20000p,200000b,200000s
-
-pdfTeX warning (dest): name{figure.caption.18} has been referenced but does not
- exist, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{figure.caption.17} has been referenced but does not
- exist, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{subsection.2.1} has been referenced but does not ex
-ist, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{section.2} has been referenced but does not exist, 
-replaced by a fixed one
-
-
-pdfTeX warning (dest): name{subsection.1.3} has been referenced but does not ex
-ist, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{subsection.1.2} has been referenced but does not ex
-ist, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{subsection.1.1} has been referenced but does not ex
-ist, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{section.1} has been referenced but does not exist, 
-replaced by a fixed one
-
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/
-share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/t
-exlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/
-texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-di
-st/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts
-/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf/fonts/type1/public/cm-su
-per/sfbx1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1200.pfb></u
-sr/share/texmf/fonts/type1/public/cm-super/sfbx1440.pfb></usr/share/texmf/fonts
-/type1/public/cm-super/sfbx2074.pfb></usr/share/texmf/fonts/type1/public/cm-sup
-er/sfrm0700.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0900.pfb></us
-r/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/fonts/
-type1/public/cm-super/sfrm1200.pfb></usr/share/texmf/fonts/type1/public/cm-supe
-r/sfss1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx1000.pfb></usr
-/share/texmf/fonts/type1/public/cm-super/sfti1000.pfb></usr/share/texmf/fonts/t
-ype1/public/cm-super/sftt0900.pfb></usr/share/texmf/fonts/type1/public/cm-super
-/sftt1000.pfb>
-Output written on main.pdf (9 pages, 1067900 bytes).
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></us
+r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share
+/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texliv
+e/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-
+dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fon
+ts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf/fonts/type1/public/cm-
+super/sfbx1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1200.pfb><
+/usr/share/texmf/fonts/type1/public/cm-super/sfbx1440.pfb></usr/share/texmf/fon
+ts/type1/public/cm-super/sfbx2074.pfb></usr/share/texmf/fonts/type1/public/cm-s
+uper/sfrm0700.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0900.pfb></
+usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/font
+s/type1/public/cm-super/sfrm1200.pfb></usr/share/texmf/fonts/type1/public/cm-su
+per/sfss1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx1000.pfb></u
+sr/share/texmf/fonts/type1/public/cm-super/sfti1000.pfb></usr/share/texmf/fonts
+/type1/public/cm-super/sftt0900.pfb></usr/share/texmf/fonts/type1/public/cm-sup
+er/sftt1000.pfb>
+Output written on main.pdf (9 pages, 1107369 bytes).
 PDF statistics:
- 253 PDF objects out of 1000 (max. 8388607)
- 180 compressed objects within 2 object streams
- 43 named destinations out of 1000 (max. 500000)
- 136 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 222 PDF objects out of 1000 (max. 8388607)
+ 149 compressed objects within 2 object streams
+ 35 named destinations out of 1000 (max. 500000)
+ 88 words of extra memory for PDF output out of 10000 (max. 10000000)
 
