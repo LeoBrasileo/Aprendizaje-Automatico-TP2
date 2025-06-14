@@ -1,14 +1,53 @@
 import re 
+from typing import Any
+from transformers import BertTokenizer
+
+TOKENIZER = BertTokenizer.from_pretrained("bert-base-multilingual-cased")
+
+ETIQUETAS_PUNT_FINAL = {
+    " ": 0,
+    "?": 1, 
+    ".": 2, 
+    ",": 3
+}
+
+ETIQUETAS_PUNT_INICIAL = {
+    " ": 0,
+    "¿": 1
+}
+
+ETIQUETAS_CAPITALIZACION = {
+    "palabra_minuscula" : 0,
+    "inicial_mayuscula" : 1,
+    "multiples_mayusculas" : 2,
+    "palabra_mayuscula" : 3
+}
+
+
+def asignar_etiquetas_puntuacion(puntuacion_por_tokens):
+    tokens_etiquetados = []
+    for token in puntuacion_por_tokens:
+        token_etiquetado = token.copy()
+        token_etiquetado['puntuacion_inicial'] = ETIQUETAS_PUNT_INICIAL[token['puntuacion_inicial']]
+        token_etiquetado['puntuacion_final'] = ETIQUETAS_PUNT_FINAL[token['puntuacion_final']]
+        tokens_etiquetados.append(token_etiquetado)
+
+    return tokens_etiquetados
+
 
 def clasificacion_mayusculas(palabra):
-    if palabra.islower(): # todo en minúsculas
-        return 0  
-    elif palabra[0].isupper() and palabra[1:].islower(): # solo la primera letra en mayúscula
-        return 1  
-    elif palabra.isupper(): # todo en mayúsculas
-        return 3 
-    else: # mezcla de mayúsculas y minúsculas
-        return 2  
+    if palabra.islower(): 
+        return ETIQUETAS_CAPITALIZACION['palabra_minuscula'] 
+    
+    elif palabra[0].isupper() and palabra[1:].islower(): 
+        return ETIQUETAS_CAPITALIZACION['inicial_mayuscula']  
+    
+    elif palabra.isupper(): 
+        return ETIQUETAS_CAPITALIZACION['palabra_mayuscula'] 
+    
+    else: 
+        return ETIQUETAS_CAPITALIZACION['multiples_mayusculas']  
+
 
 def generar_data_palabras(instancia, instancia_id):
     data_palabras = []
@@ -28,17 +67,23 @@ def generar_data_palabras(instancia, instancia_id):
         
     return data_palabras
 
-def clasificacion_nivel_token(tokens, data_palabras, tokenizer):
+
+def asignar_puntuacion_a_tokens(instancia_original: str, instancia_id: int, 
+                                instancia_tokens: list[int], 
+                                tokenizer: BertTokenizer=TOKENIZER) -> list[dict[str, Any]]:
+    
+    data_palabras = generar_data_palabras(instancia_original, instancia_id)
+    
     palabra_actual = 0
     resultado = []
 
-    for (i, token) in enumerate(tokens):
+    for (i, token) in enumerate(instancia_tokens):
         clasificacion_token = {
             'instancia_id' : data_palabras[palabra_actual]['instancia_id'],
             'token': token,
             'token_id': tokenizer.convert_tokens_to_ids(token),
             'capitalizacion' : data_palabras[palabra_actual]['capitalizacion'],
-            'puntuacion_inicial' : '', 'puntuacion_final' : ''          # a priori, no sabemos si llevan puntuación.
+            'puntuacion_inicial' : ' ', 'puntuacion_final' : ' '          # a priori, no sabemos si llevan puntuación.
         }
         
         # Si soy el primer token de la palabra, llevo la puntuación inicial.
@@ -46,7 +91,7 @@ def clasificacion_nivel_token(tokens, data_palabras, tokenizer):
             clasificacion_token['puntuacion_inicial'] = data_palabras[palabra_actual]['puntuacion_inicial']
         
         # Si soy el último token de la palabra, llevo la puntuación final (y pasamos a la siguiente palabra)
-        if (i == len(tokens)-1 or tokens[i+1][0] != "#"):
+        if (i == len(instancia_tokens)-1 or instancia_tokens[i+1][0] != "#"):
             clasificacion_token['puntuacion_final'] = data_palabras[palabra_actual]['puntuacion_final']
             palabra_actual+=1
 

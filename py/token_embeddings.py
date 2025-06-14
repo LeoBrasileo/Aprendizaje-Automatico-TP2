@@ -1,6 +1,6 @@
-from transformers import BertTokenizer
+from transformers import BertTokenizer, BertModel
 
-def get_multilingual_token_embedding(token: str, tokenizer: BertTokenizer, model):
+def get_multilingual_token_embedding(token: str, tokenizer: BertTokenizer, model: BertModel):
     """
     Devuelve el embedding (estático) para el token.
     """
