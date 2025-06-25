@@ -98,3 +98,53 @@ def asignar_puntuacion_a_tokens(instancia_original: str, instancia_id: int,
         resultado.append(clasificacion_token)
 
     return resultado
+
+def reconstruir_texto(data, caps_pred, punt_inic_pred, punt_fin_pred):
+    frases = []
+
+    frase = ""
+    ult_instancia = 0
+
+    for i in range(len(data)):
+        token_data = data[i]
+        token = token_data['token']
+        instancia = token_data['instancia_id']
+
+        if instancia != ult_instancia and ult_instancia != 0:
+            frases.append(frase.strip())
+            frase = ""
+        ult_instancia = instancia
+        
+        puntuacion_inicial = punt_inic_pred[i]
+        puntuacion_final = punt_fin_pred[i]
+        capitalizacion = caps_pred[i]
+
+        match capitalizacion:
+            case 0:
+                token = token.lower()
+            case 1:
+                token = token.capitalize()
+            case 2:
+                token = token.capitalize() # no se bien que hacer aca
+            case 3:
+                token = token.upper()
+
+        if puntuacion_inicial == 1:
+            token = "¿" + token
+
+        match puntuacion_final:
+            case 1:
+                token = token + "?"
+            case 2:
+                token = token + "."
+            case 3:
+                token = token + ","
+
+        if token.startswith("##"):
+            token = token[2:]
+        else:
+            token = " " + token
+                
+        frase += token
+
+    return frases
