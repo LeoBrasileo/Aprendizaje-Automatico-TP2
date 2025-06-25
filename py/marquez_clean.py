@@ -220,3 +220,64 @@ if __name__ == "__main__":
 
     else:
         print("Failed to load text from GitHub")
+
+
+# --- Dataset ---
+import torch
+from torch.utils.data import Dataset
+import torch.nn as nn
+class MarquezDataset(Dataset):
+    def __init__(self, data, label_key='puntuacion_final', pad_token_id=0, pad_label_id=-100):
+        """
+        Args:
+            data: list of sentences, each a list of dicts (one per token)
+            label_key: which label to use ('puntuacion_final' or 'puntuacion_inicial')
+            pad_token_id: ID used for padding tokens
+            pad_label_id: label used for padding positions (-100 for CrossEntropyLoss)
+        """
+        self.data = data
+        self.label_key = label_key
+        self.pad_token_id = pad_token_id
+        self.pad_label_id = pad_label_id
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        sentence = self.data[idx]
+
+        # Extract features
+        token_ids = [tok['token_id'] for tok in sentence]
+        caps = [tok['capitalizacion'] for tok in sentence]
+        punt_inicial = [tok['puntuacion_inicial'] for tok in sentence]
+        punt_final = [tok[self.label_key] for tok in sentence]
+
+        return {
+            'token_ids': torch.tensor(token_ids, dtype=torch.long),
+            'capitalizacion': torch.tensor(caps, dtype=torch.float),
+            'puntuacion_inicial': torch.tensor(punt_inicial, dtype=torch.float),
+            'puntuacion_final': torch.tensor(punt_final, dtype=torch.float),
+            'length': len(token_ids)
+        }
+
+def marquez_collate_fn(batch, pad_token_id=0, pad_label_id=-100):
+    # Separate each field
+    token_ids = [item['token_ids'] for item in batch]
+    caps = [item['capitalizacion'] for item in batch]
+    punt_inicial = [item['puntuacion_inicial'] for item in batch]
+    punt_final = [item['puntuacion_final'] for item in batch]
+    lengths = [item['length'] for item in batch]
+
+    # Pad sequences
+    padded_token_ids = nn.utils.rnn.pad_sequence(token_ids, batch_first=True, padding_value=pad_token_id)
+    padded_caps = nn.utils.rnn.pad_sequence(caps, batch_first=True, padding_value=0.0)
+    padded_punt_inicial = nn.utils.rnn.pad_sequence(punt_inicial, batch_first=True, padding_value=pad_label_id)
+    padded_punt_final = nn.utils.rnn.pad_sequence(punt_final, batch_first=True, padding_value=pad_label_id)
+
+    return {
+        'token_ids': padded_token_ids,
+        'capitalizacion': padded_caps,
+        'puntuacion_inicial': padded_punt_inicial,
+        'puntuacion_final': padded_punt_final,
+        'lengths': torch.tensor(lengths)
+    }
