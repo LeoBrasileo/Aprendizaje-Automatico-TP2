@@ -14,6 +14,7 @@ def ejecutar_epoch_entrenamiento(model, dataloader, optimizer, criterion):
                 batch[key] = batch[key].to(device)
             
         # Paso forward
+        batch['token_ids'] = batch['token_ids'].to(device)
         logits_punt_inic, logits_punt_final, logits_capitalizacion = model(batch['token_ids'])
 
         # Reshape de los logits para CE:
@@ -44,13 +45,15 @@ def ejecutar_epoch_entrenamiento(model, dataloader, optimizer, criterion):
 def evaluar_modelo(model, dataloader, criterion, epoch_actual, cant_epochs, device):     # El parámetro epoch_actual es sólo con el fin de printear y ver resultados del modelo en ciertas epochs.
     model.eval()
     total_loss = 0
+    device = next(model.parameters()).device
     
     with torch.no_grad():
         for batch_idx, batch in enumerate(dataloader):
             for key in batch:
                 if isinstance(batch[key], torch.Tensor):
                     batch[key] = batch[key].to(device)
-
+            
+            batch['token_ids'] = batch['token_ids'].to(device)
             output_punt_inic, output_punt_final, output_capitalizacion = model(batch['token_ids'])
 
             # Reshape para usar en CE

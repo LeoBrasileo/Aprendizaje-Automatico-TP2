@@ -254,9 +254,9 @@ class MarquezDataset(Dataset):
 
         return {
             'token_ids': torch.tensor(token_ids, dtype=torch.long),
-            'capitalizacion': torch.tensor(caps, dtype=torch.float),
-            'puntuacion_inicial': torch.tensor(punt_inicial, dtype=torch.float),
-            'puntuacion_final': torch.tensor(punt_final, dtype=torch.float),
+            'capitalizacion': torch.tensor(caps, dtype=torch.long),
+            'puntuacion_inicial': torch.tensor(punt_inicial, dtype=torch.long),
+            'puntuacion_final': torch.tensor(punt_final, dtype=torch.long),
             'length': len(token_ids)
         }
 
