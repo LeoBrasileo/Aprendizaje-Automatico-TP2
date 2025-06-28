@@ -19,12 +19,9 @@ class RNN_Clasica(nn.Module):
       self.embedding = nn.Embedding(num_embeddings=vocab_size, embedding_dim=embedding_dim)
 
     # Dos capas LSTM 
-    self.LSTM_1 = nn.LSTM(embedding_dim, hidden_size, batch_first=True)
-    self.LSTM_2 = nn.LSTM(hidden_size, hidden_size, batch_first=True)
+    self.LSTM = nn.LSTM(embedding_dim, hidden_size, num_layers=2, batch_first=True, dropout=dropout_rate)
     
     # Dropout
-    self.dropout = nn.Dropout(dropout_rate)
-    
     # Capas de output para las tres tareas que queremos 
     self.linear_puntuacion_inic = nn.Linear(hidden_size, 2)     # Sin puntuación || ¿
     self.linear_puntuacion_final = nn.Linear(hidden_size, 4)    # Sin puntuación || ? || , || . 
@@ -32,12 +29,8 @@ class RNN_Clasica(nn.Module):
 
   def forward(self, x):
       x = self.embedding(x)
-
-      x, _ = self.LSTM_1(x)
-      x = self.dropout(x)
-      x, _ = self.LSTM_2(x)
-      x = self.dropout(x)
-
+      x, _ = self.LSTM(x)
+ 
       # Cada bloque lineal produce logits (no probabilidades) para cada clase, en la tarea que le corresponde
       # No agrego softmax o algo del estilo porque luego usamos CrossEntropyLoss, que espera los logits.
       score_puntuacion_inic = self.linear_puntuacion_inic(x)  

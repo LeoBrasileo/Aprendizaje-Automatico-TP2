@@ -3,6 +3,10 @@ import requests
 import re
 import os
 import csv
+import torch
+from torch.utils.data import Dataset
+import torch.nn as nn
+
 
 characters = [ #incluye variantes de los nombres 
     "José Arcadio Buendía",
@@ -111,8 +115,8 @@ def clean_text_for_training(text):
     text = text.replace("»", "")
     #no saco los "-" porque vienen de dialogos y me puede servir para identidicar frases de personajes
     #me arrepenti -> lo saco
-    text = text.replace("-", " ")
-    text = text.replace("—", " ")
+    text = text.replace("-", "")
+    text = text.replace("—", "")
 
     # saco todos los nombres propios
     text = replace_proper_nouns(text)
@@ -136,7 +140,7 @@ def has_words_full_capitalized(sentence):
 def is_decorative(sentence):
     return re.fullmatch(r'[-–—=*\s]+', sentence) or sentence.isdigit()
     
-def remain_important_sentences(text):
+def keep_important_sentences(text):
     """El texto crudo esta lleno de oraciones que no aportan valor semantico para nuestro modelo. Esta función limpia el texto para optimizar el entrenamiento"""
     new_sentences = []
     sentences = text.split('.')
@@ -146,7 +150,7 @@ def remain_important_sentences(text):
         if is_decorative(sentence):
             continue
 
-        new_sentences.append(sentence + ".".strip())
+        new_sentences.append((sentence + ".").strip())
 
     return new_sentences
 
@@ -168,7 +172,7 @@ def sentences_to_paragraph(sentences):
         i += num_sentences
     return paragraphs
 
-def clean_paragraph(paragraph):
+def clean_sentence(paragraph):
     """Limpia los párrafos eliminando espacios innecesarios y normalizando el texto"""
     vocales_con_acento_min = [chr(x) for x in [ord('á'), ord('é'), ord('í'), ord('ó'), ord('ú')]]
     vocales_con_acento_may = [chr(x) for x in [ord('Á'), ord('É'), ord('Í'), ord('Ó'), ord('Ú')]]
@@ -185,15 +189,15 @@ def clean_paragraph(paragraph):
             res += replace_dict[c]
     return res
 
-def paragraphs_to_csv(paragraphs, output_csv):
+def sentences_to_csv(sentences, output_csv):
     """Guarda los parrafos importantes y su parte limpia en un archivo CSV"""
     try:
         with open(output_csv, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['texto_original', 'texto_limpio'])
-            for paragraph in paragraphs:
-                cleaned_paragraph = clean_paragraph(paragraph)
-                writer.writerow([paragraph, cleaned_paragraph])
+            for sentence in sentences:
+                cleaned_sentence = clean_sentence(sentence)
+                writer.writerow([sentence, cleaned_sentence])
         print(f"Paragraphs saved to: {output_csv}")
         return True
     except IOError as e:
@@ -201,8 +205,8 @@ def paragraphs_to_csv(paragraphs, output_csv):
         return False
 
 if __name__ == "__main__":
-    output_file = "data/marquez_cleaned.txt"
-    output_csv = "data/marquez_cleaned.csv"
+    output_file = "data/marquez_por_oracion.txt"
+    output_csv = "data/marquez_por_oracion.csv"
     raw_text = load_text_from_github()
     
     if raw_text:
@@ -214,18 +218,14 @@ if __name__ == "__main__":
 
         cleaned_text = clean_text_for_training(cleaned_text)
 
-        sentences = remain_important_sentences(cleaned_text)
-        paragraphs = sentences_to_paragraph(sentences)
-        paragraphs_to_csv(paragraphs, output_csv)
+        sentences = keep_important_sentences(cleaned_text)
+        sentences_to_csv(sentences, output_csv)
 
     else:
         print("Failed to load text from GitHub")
 
 
 # --- Dataset ---
-import torch
-from torch.utils.data import Dataset
-import torch.nn as nn
 class MarquezDataset(Dataset):
     def __init__(self, data, label_key='puntuacion_final', pad_token_id=0, pad_label_id=-100):
         """
@@ -254,9 +254,9 @@ class MarquezDataset(Dataset):
 
         return {
             'token_ids': torch.tensor(token_ids, dtype=torch.long),
-            'capitalizacion': torch.tensor(caps, dtype=torch.float),
-            'puntuacion_inicial': torch.tensor(punt_inicial, dtype=torch.float),
-            'puntuacion_final': torch.tensor(punt_final, dtype=torch.float),
+            'capitalizacion': torch.tensor(caps, dtype=torch.long),
+            'puntuacion_inicial': torch.tensor(punt_inicial, dtype=torch.long),
+            'puntuacion_final': torch.tensor(punt_final, dtype=torch.long),
             'length': len(token_ids)
         }
 

@@ -1,6 +1,15 @@
 import re 
 from typing import Any
 from transformers import BertTokenizer
+import pandas as pd
+from pathlib import Path
+from torch.nn.utils.rnn import pad_sequence
+
+import torch
+from torch.utils.data import Dataset, DataLoader
+from collections import defaultdict
+from typing import List
+
 
 TOKENIZER = BertTokenizer.from_pretrained("bert-base-multilingual-cased")
 
@@ -24,6 +33,60 @@ ETIQUETAS_CAPITALIZACION = {
 }
 
 
+class DatasetBase(Dataset):
+    def __init__(self, data: List[dict]):
+        self.data = data
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, indice):
+        instancia = self.data[indice]
+
+        token_ids = [token['token_id'] for token in instancia]
+        capitalizacion = [token['capitalizacion'] for token in instancia]
+        puntuacion_inicial = [token['puntuacion_inicial'] for token in instancia]
+        puntuacion_final = [token['puntuacion_final'] for token in instancia]
+
+        return {
+            'token_ids': torch.tensor(token_ids, dtype=torch.long),
+            'capitalizacion': torch.tensor(capitalizacion, dtype=torch.long),
+            'puntuacion_inicial': torch.tensor(puntuacion_inicial, dtype=torch.long),
+            'puntuacion_final': torch.tensor(puntuacion_final, dtype=torch.long),
+        }
+
+def collate_fn(batch, padding_token_id=0, padding_etiqueta_id=-100):
+    token_ids = [elem['token_ids'] for elem in batch]
+    capitalizacion = [elem['capitalizacion'] for elem in batch]
+    puntuacion_inicial = [elem['puntuacion_inicial'] for elem in batch]
+    puntuacion_final = [elem['puntuacion_final'] for elem in batch]
+
+    return {
+        'token_ids': pad_sequence(token_ids, batch_first=True, padding_value=padding_token_id),
+        'capitalizacion': pad_sequence(capitalizacion, batch_first=True, padding_value=padding_etiqueta_id),
+        'puntuacion_inicial': pad_sequence(puntuacion_inicial, batch_first=True, padding_value=padding_etiqueta_id),
+        'puntuacion_final': pad_sequence(puntuacion_final, batch_first=True, padding_value=padding_etiqueta_id),
+    }
+
+###############################################################################################################################
+
+def limpiar_string (s) :
+  vocales_con_acento_min = [chr(x) for x in [ord('á'), ord('é'), ord('í'), ord('ó'), ord('ú')]]
+  vocales_con_acento_may = [chr(x) for x in [ord('Á'), ord('É'), ord('Í'), ord('Ó'), ord('Ú')]]
+  allowed_characters = [chr(x) for x in range(97,123)] + vocales_con_acento_min + [chr(241)] + [chr(10), chr(32)] + [chr(x) for x in range(48,58)] # los caracteres de letras minúsculas, espacio en blanco y fin de linea y números
+  characters_to_replace = [chr(x) for x in range(65,91)] + vocales_con_acento_may + [chr(209)] #las mayúsculas
+  characters_to_replace_with = [chr(x) for x in range(97,123)] + vocales_con_acento_min + [chr(241)] #las minúsculas
+  replace_dict = dict(zip(characters_to_replace, characters_to_replace_with))
+
+  res = ""
+  for c in s :
+    if c in allowed_characters :
+      res += c
+    elif c in characters_to_replace :
+      res += replace_dict[c]
+  return res
+
+
 def asignar_etiquetas_puntuacion(puntuacion_por_tokens):
     tokens_etiquetados = []
     for token in puntuacion_por_tokens:
@@ -33,7 +96,6 @@ def asignar_etiquetas_puntuacion(puntuacion_por_tokens):
         tokens_etiquetados.append(token_etiquetado)
 
     return tokens_etiquetados
-
 
 def clasificacion_mayusculas(palabra):
     if palabra.islower(): 
@@ -98,6 +160,32 @@ def asignar_puntuacion_a_tokens(instancia_original: str, instancia_id: int,
         resultado.append(clasificacion_token)
 
     return resultado
+
+
+def cargar_csv(paths: list[str]):
+    """
+    Forma del dataset: csv con atributos "texto_original, texto_limpio"
+    Recibe una lista de paths y concatena todas las filas de cada archivo.
+    """
+    dfs = [pd.read_csv(path) for path in paths]
+    dataset_df = pd.concat(dfs, ignore_index=True)
+    dataset_df.to_csv("dataset_completo.csv", index=False)
+    
+    return dataset_df["texto_original"], dataset_df["texto_limpio"]
+
+
+def generar_datos_etiquetados(paths: list[str], id_offset: int = 0, tokenizer: BertTokenizer=TOKENIZER):
+    instancias_orig, instancias_procesadas = cargar_csv(paths)
+    
+    dataset = []
+    for i, (instancia_orig, instancia_proc) in enumerate(zip(instancias_orig, instancias_procesadas)):
+        dataset.append(
+            asignar_etiquetas_puntuacion(
+                asignar_puntuacion_a_tokens(instancia_original=instancia_orig, instancia_id=(id_offset + i), instancia_tokens=tokenizer.tokenize(instancia_proc))
+            )
+        )
+    return dataset
+
 
 def reconstruir_texto(data, caps_pred, punt_inic_pred, punt_fin_pred):
     frases = []
