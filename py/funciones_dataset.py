@@ -57,7 +57,6 @@ class DatasetBase(Dataset):
 
 def collate_fn(batch, padding_token_id=0, padding_etiqueta_id=-100):
     token_ids = [elem['token_ids'] for elem in batch]
-    print([elem for elem in batch])
     capitalizacion = [elem['capitalizacion'] for elem in batch]
     puntuacion_inicial = [elem['puntuacion_inicial'] for elem in batch]
     puntuacion_final = [elem['puntuacion_final'] for elem in batch]
