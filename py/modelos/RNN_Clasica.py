@@ -29,7 +29,6 @@ class RNN_Clasica(nn.Module):
 
   def forward(self, x):
       x = self.embedding(x)
-
       x, _ = self.LSTM(x)
  
       # Cada bloque lineal produce logits (no probabilidades) para cada clase, en la tarea que le corresponde
