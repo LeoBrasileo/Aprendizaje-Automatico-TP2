@@ -38,12 +38,12 @@ class RNN_Bidireccional(nn.Module):
     #usamos dos RNNs bidireccionales, según el paper que habíamos visto
     self.rnn1 = nn.RNN(embedding_dim, hidden_size, num_layers, batch_first=True, bidirectional=True)
     ##### self.rnn1 = nn.RNN(embedding_dim, hidden_size, num_layers, batch_first=True, bidirectional=True)
-    self.rnn2 = nn.RNN(hidden_size, hidden_size, num_layers, batch_first=True, bidirectional=True)
+    self.rnn2 = nn.RNN(hidden_size * 2, hidden_size, num_layers, batch_first=True, bidirectional=True)
 
     #usamos tres lineales para predecir la puntuación inicial, la final y la capitalización con la otra
-    self.linear_initial_punctuation = nn.Linear(hidden_size, initial_punct_class_size)
-    self.linear_final_punctuation = nn.Linear(hidden_size, final_punct_class_size)
-    self.linear_capitalization = nn.Linear(hidden_size, cap_class_size)
+    self.linear_initial_punctuation = nn.Linear(hidden_size * 2, initial_punct_class_size)
+    self.linear_final_punctuation = nn.Linear(hidden_size * 2, final_punct_class_size)
+    self.linear_capitalization = nn.Linear(hidden_size * 2, cap_class_size)
     
     #funciones de activación para las capas ocultas (ReLu) y para el ouput una softmax para cada set de predicciones
     self.activation_hidden = nn.ReLU()
@@ -54,9 +54,9 @@ class RNN_Bidireccional(nn.Module):
       x = self.embedding(x)
 
     #x_in : hidden_size, x_out : hidden_size
-      x = self.rnn1(x)
+      x, _ = self.rnn1(x)
       x = self.activation_hidden(x)
-      x = self.rnn2(x)
+      x, _ = self.rnn2(x)
       x = self.activation_hidden(x)
 
     #x_in : hidden_size, x_out : |clases puntuación| + |clases capitalización|
