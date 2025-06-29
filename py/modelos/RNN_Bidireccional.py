@@ -1,5 +1,20 @@
 import torch
 import torch.nn as nn
+from transformers import BertTokenizer, BertModel
+
+model_name = "bert-base-multilingual-cased"
+tokenizer = BertTokenizer.from_pretrained(model_name)
+model = BertModel.from_pretrained(model_name)
+model.eval()
+
+def get_multilingual_token_embedding(token: str):
+  token_id = tokenizer.convert_tokens_to_ids(token)
+
+  if token_id is None or token_id == tokenizer.unk_token_id:
+    return None
+
+  embedding_vector = model.embeddings.word_embeddings.weight[token_id]
+  return embedding_vector
 
 class RNN_Bidireccional(nn.Module):
   def __init__(self, 
@@ -10,19 +25,20 @@ class RNN_Bidireccional(nn.Module):
                num_layers, 
                embedding_dim,
                vocab_size,
-               embeddings=None):
+               embedding=False):
     super(RNN_Bidireccional, self).__init__()
 
     #si tenemos embeddings pre-entrenados, los usamos
-    if embeddings:
-      self.embedding = nn.Embedding.from_pretrained(embeddings, freeze=True)
+    if embedding:
+      #self.embedding = nn.Embedding.from_pretrained(embeddings, freeze=True)
+      self.embedding = get_multilingual_token_embedding
     else:
-      self.embedding = nn.Embedding(input_size, hidden_size)
+      self.embedding = nn.Embedding(input_size, embedding_dim)
       ##### COMENTARIO DE BIANCA: Para mí habría que cambiar a lo que sigue (y también cambiar la rnn1 con lo que comenté abajo), ya que la nn.Embedding define la "look-up table"
       ##### self.embedding = nn.Embedding(num_embeddings=vocab_size, embedding_dim=embedding_dim)
 
     #usamos dos RNNs bidireccionales, según el paper que habíamos visto
-    self.rnn1 = nn.RNN(hidden_size, hidden_size, num_layers, batch_first=True, bidirectional=True)
+    self.rnn1 = nn.RNN(embedding_dim, hidden_size, num_layers, batch_first=True, bidirectional=True)
     ##### self.rnn1 = nn.RNN(embedding_dim, hidden_size, num_layers, batch_first=True, bidirectional=True)
     self.rnn2 = nn.RNN(hidden_size, hidden_size, num_layers, batch_first=True, bidirectional=True)
 
