@@ -17,34 +17,32 @@ def get_multilingual_token_embedding(token: str):
   return embedding_vector
 
 class RNN_Bidireccional(nn.Module):
-  def __init__(self, 
-               input_size, 
-               hidden_size, 
-               punct_class_size, 
-               cap_class_size, 
+  def __init__(self,
+               hidden_size,  
                num_layers, 
                embedding_dim,
                vocab_size,
-               embedding=False):
+               cap_class_size=4,
+               initial_punct_class_size=2,
+               final_punct_class_size=4,
+               bert_embedding=False):
     super(RNN_Bidireccional, self).__init__()
 
     #si tenemos embeddings pre-entrenados, los usamos
-    if embedding:
+    if bert_embedding:
       #self.embedding = nn.Embedding.from_pretrained(embeddings, freeze=True)
       self.embedding = get_multilingual_token_embedding
     else:
-      self.embedding = nn.Embedding(input_size, embedding_dim)
-      ##### COMENTARIO DE BIANCA: Para mí habría que cambiar a lo que sigue (y también cambiar la rnn1 con lo que comenté abajo), ya que la nn.Embedding define la "look-up table"
-      ##### self.embedding = nn.Embedding(num_embeddings=vocab_size, embedding_dim=embedding_dim)
+      self.embedding = nn.Embedding(num_embeddings=vocab_size, embedding_dim=embedding_dim)      
 
     #usamos dos RNNs bidireccionales, según el paper que habíamos visto
     self.rnn1 = nn.RNN(embedding_dim, hidden_size, num_layers, batch_first=True, bidirectional=True)
     ##### self.rnn1 = nn.RNN(embedding_dim, hidden_size, num_layers, batch_first=True, bidirectional=True)
     self.rnn2 = nn.RNN(hidden_size, hidden_size, num_layers, batch_first=True, bidirectional=True)
 
-    #usamos dos lineales para predecir la puntuación con una y la capitalización con la otra
-    ### COMENTARIO (duda) DE BIANCA: entonces las clases de puntuación son tuplas (punt inicial, punt final) = ( ¿ , ? ), (None, ","),... ? es decir tenemos 8 clases para puntuación en vez de tomarlo como dos tareas separadas? Yo en la clase de la red clásica había hecho como si fuesen 3 tareas.
-    self.linear_punctuation = nn.Linear(hidden_size, punct_class_size)
+    #usamos tres lineales para predecir la puntuación inicial, la final y la capitalización con la otra
+    self.linear_initial_punctuation = nn.Linear(hidden_size, initial_punct_class_size)
+    self.linear_final_punctuation = nn.Linear(hidden_size, final_punct_class_size)
     self.linear_capitalization = nn.Linear(hidden_size, cap_class_size)
     
     #funciones de activación para las capas ocultas (ReLu) y para el ouput una softmax para cada set de predicciones
@@ -62,10 +60,14 @@ class RNN_Bidireccional(nn.Module):
       x = self.activation_hidden(x)
 
     #x_in : hidden_size, x_out : |clases puntuación| + |clases capitalización|
-      x_punt = self.linear_punctuation(x)
-      x_punt = self.activation_output(x_punt)
+      x_punt_inicial = self.linear_initial_punctuation(x)
+      x_punt_inicial = self.activation_output(x_punt_inicial)
+
+      x_punt_final = self.linear_final_punctuation(x)
+      x_punt_final = self.activation_output(x_punt_final)
 
       x_cap = self.linear_capitalization(x)
       x_cap = self.activation_output(x_cap)
 
-      return torch.cat((x_punt,x_cap), dim=0)
+      #return torch.cat((x_punt_inicial,x_punt_final,x_cap), dim=0)
+      return x_punt_inicial, x_punt_final, x_cap

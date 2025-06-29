@@ -1,23 +1,40 @@
 import torch
 import torch.nn as nn
+from transformers import BertTokenizer, BertModel
+
+model_name = "bert-base-multilingual-cased"
+tokenizer = BertTokenizer.from_pretrained(model_name)
+model = BertModel.from_pretrained(model_name)
+model.eval()
+
+def get_multilingual_token_embedding(token: str):
+  token_id = tokenizer.convert_tokens_to_ids(token)
+
+  if token_id is None or token_id == tokenizer.unk_token_id:
+    return None
+
+  embedding_vector = model.embeddings.word_embeddings.weight[token_id]
+  return embedding_vector
 
 class RNN_Clasica(nn.Module):
   def __init__(self, 
                hidden_size,
                embedding_dim, 
                vocab_size, 
-               embeddings=None,
+               bert_embedding=True,
                dropout_rate=0.5
                ):
     
     super(RNN_Clasica, self).__init__()
     
-    # Si tenemos embeddings pre-entrenados, los usamos
-    if embeddings:
-      self.embedding = nn.Embedding.from_pretrained(embeddings, freeze=True)
+    # Si tenemos embedding pre-entrenados, los usamos
+    if bert_embedding:
+      #self.embedding = get_multilingual_token_embedding
+
+      self.embedding = nn.Embedding.from_pretrained(model.embeddings.word_embeddings.weight, freeze=True)
+
     else:
       self.embedding = nn.Embedding(num_embeddings=vocab_size, embedding_dim=embedding_dim)
-
     # Dos capas LSTM 
     self.LSTM = nn.LSTM(embedding_dim, hidden_size, num_layers=2, batch_first=True, dropout=dropout_rate)
     

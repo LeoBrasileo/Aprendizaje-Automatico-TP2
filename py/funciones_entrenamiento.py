@@ -15,7 +15,10 @@ def ejecutar_epoch_entrenamiento(model, dataloader, optimizer, criterion):
             
         # Paso forward
         batch['token_ids'] = batch['token_ids'].to(device)
+        #print(f"token_ids shape: {batch['token_ids'].shape}, device: {batch['token_ids'].device}")
+        #print(f"target_punt_final shape: {batch['puntuacion_final'].shape}, device: {batch['puntuacion_final'].device}")
         logits_punt_inic, logits_punt_final, logits_capitalizacion = model(batch['token_ids'])
+        #print(logits_capitalizacion.device())
 
         # Reshape de los logits para CE:
         logits_punt_inic = logits_punt_inic.reshape(-1, logits_punt_inic.size(-1))

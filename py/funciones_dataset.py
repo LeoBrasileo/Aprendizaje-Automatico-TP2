@@ -101,7 +101,7 @@ def clasificacion_mayusculas(palabra):
     if palabra.islower(): 
         return ETIQUETAS_CAPITALIZACION['palabra_minuscula'] 
     
-    elif palabra[0].isupper() and palabra[1:].islower(): 
+    elif palabra[0].isupper() and (palabra[1:].islower() or len(palabra) == 1):  
         return ETIQUETAS_CAPITALIZACION['inicial_mayuscula']  
     
     elif palabra.isupper(): 
