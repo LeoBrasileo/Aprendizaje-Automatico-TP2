@@ -17,71 +17,64 @@ def get_multilingual_token_embedding(token: str):
   return embedding_vector
 
 class RNN_Bidireccional(nn.Module):
-  def __init__(self,
-               hidden_size,  
-               num_layers, 
-               embedding_dim,
-               vocab_size,
-               cap_class_size=4,
-               initial_punct_class_size=2,
-               final_punct_class_size=4,
-               bert_embedding=False):
-    super(RNN_Bidireccional, self).__init__()
+    def __init__(self,
+                 hidden_size,  
+                 num_layers, 
+                 embedding_dim,
+                 vocab_size,
+                 cap_class_size=4,
+                 initial_punct_class_size=2,
+                 final_punct_class_size=4,
+                 bert_embedding=False):
+        super(RNN_Bidireccional, self).__init__()
 
-    #si tenemos embeddings pre-entrenados, los usamos
-    if bert_embedding:
-      #self.embedding = nn.Embedding.from_pretrained(embeddings, freeze=True)
-      self.embedding = get_multilingual_token_embedding
-    else:
-      self.embedding = nn.Embedding(num_embeddings=vocab_size, embedding_dim=embedding_dim)      
+        if bert_embedding:
+            self.embedding = get_multilingual_token_embedding  # should be a callable!
+        else:
+            self.embedding = nn.Embedding(num_embeddings=vocab_size, embedding_dim=embedding_dim)      
 
-    #usamos dos RNNs bidireccionales, según el paper que habíamos visto
-    self.rnn1 = nn.RNN(embedding_dim, hidden_size, num_layers, batch_first=True, bidirectional=True)
-    ##### self.rnn1 = nn.RNN(embedding_dim, hidden_size, num_layers, batch_first=True, bidirectional=True)
-    self.rnn2 = nn.RNN(hidden_size * 2, hidden_size, num_layers, batch_first=True, bidirectional=True)
+        self.rnn1 = nn.RNN(embedding_dim, hidden_size, num_layers, batch_first=True, bidirectional=True)
+        self.rnn2 = nn.RNN(hidden_size * 2, hidden_size, num_layers, batch_first=True, bidirectional=True)
 
+        # each LSTM stack manually (not using Sequential)
+        self.lstm_init_1 = nn.LSTM(hidden_size * 2, hidden_size // 3, batch_first=True)
+        self.lstm_init_2 = nn.LSTM(hidden_size // 3, hidden_size // 12, batch_first=True)
+        self.linear_init = nn.Linear(hidden_size // 12, initial_punct_class_size)
 
-    self.LSTM_initial_punct = nn.sequential(nn.LSTM(input_size=hidden_size, hidden_size=hidden_size/3), 
-                                            nn.LSTM(input_size=hidden_size/3, hidden_size=hidden_size/6),
-                                            nn.LSTM(input_size=hidden_size/6, hidden_size=hidden_size/12))
-    
-    self.LSTM_final_punct = nn.sequential(nn.LSTM(input_size=hidden_size, hidden_size=hidden_size/3), 
-                                            nn.LSTM(input_size=hidden_size/3, hidden_size=hidden_size/6),
-                                            nn.LSTM(input_size=hidden_size/6, hidden_size=hidden_size/12))
-    
-    self.LSTM_capitalization = nn.sequential(nn.LSTM(input_size=hidden_size, hidden_size=hidden_size/3), 
-                                            nn.LSTM(input_size=hidden_size/3, hidden_size=hidden_size/12),
-                                            nn.LSTM(input_size=hidden_size/6, hidden_size=hidden_size/12))
+        self.lstm_final_1 = nn.LSTM(hidden_size * 2, hidden_size // 3, batch_first=True)
+        self.lstm_final_2 = nn.LSTM(hidden_size // 3, hidden_size // 12, batch_first=True)
+        self.linear_final = nn.Linear(hidden_size // 12, final_punct_class_size)
 
-    #usamos tres lineales para predecir la puntuación inicial, la final y la capitalización con la otra
-    #self.linear_initial_punctuation = nn.Linear(hidden_size * 2, initial_punct_class_size)
-    #self.linear_final_punctuation = nn.Linear(hidden_size * 2, final_punct_class_size)
-    #self.linear_capitalization = nn.Linear(hidden_size * 2, cap_class_size)
-    
-    #funciones de activación para las capas ocultas (ReLu) y para el ouput una softmax para cada set de predicciones
-    self.activation_hidden = nn.ReLU()
-    self.activation_output = nn.Softmax(dim=1)
+        self.lstm_cap_1 = nn.LSTM(hidden_size * 2, hidden_size // 3, batch_first=True)
+        self.lstm_cap_2 = nn.LSTM(hidden_size // 3, hidden_size // 12, batch_first=True)
+        self.linear_cap = nn.Linear(hidden_size // 12, cap_class_size)
 
-  def forward(self, x):
-    #x_in : input_size, x_out : hidden_size
-      x = self.embedding(x)
+        self.activation_hidden = nn.ReLU()
+        self.activation_output = nn.Softmax(dim=-1)
 
-    #x_in : hidden_size, x_out : hidden_size
-      x, _ = self.rnn1(x)
-      x = self.activation_hidden(x)
-      x, _ = self.rnn2(x)
-      x = self.activation_hidden(x)
+    def forward(self, x):
+        x = self.embedding(x)
+        x, _ = self.rnn1(x)
+        x = self.activation_hidden(x)
+        x, _ = self.rnn2(x)
+        x = self.activation_hidden(x)
 
-    #x_in : hidden_size, x_out : |clases puntuación| + |clases capitalización|
-      #x_punt_inicial = self.linear_initial_punctuation(x)
-      x_punt_inicial = self.LSTM_initial_punct(x)
-      x_punt_inicial = self.activation_output(x_punt_inicial)
+        # Initial punctuation
+        out_init, _ = self.lstm_init_1(x)
+        out_init, _ = self.lstm_init_2(out_init)
+        out_init = self.linear_init(out_init)
+        out_init = self.activation_output(out_init)
 
-      x_punt_final = self.LSTM_final_punct(x)
-      x_punt_final = self.activation_output(x_punt_final)
+        # Final punctuation
+        out_final, _ = self.lstm_final_1(x)
+        out_final, _ = self.lstm_final_2(out_final)
+        out_final = self.linear_final(out_final)
+        out_final = self.activation_output(out_final)
 
-      x_cap = self.LSTM_capitalization(x)
-      x_cap = self.activation_output(x_cap)
+        # Capitalization
+        out_cap, _ = self.lstm_cap_1(x)
+        out_cap, _ = self.lstm_cap_2(out_cap)
+        out_cap = self.linear_cap(out_cap)
+        out_cap = self.activation_output(out_cap)
 
-      #return torch.cat((x_punt_inicial,x_punt_final,x_cap), dim=0)
-      return x_punt_inicial, x_punt_final, x_cap
+        return out_init, out_final, out_cap
