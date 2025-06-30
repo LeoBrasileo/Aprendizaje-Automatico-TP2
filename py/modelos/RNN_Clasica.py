@@ -43,15 +43,15 @@ class RNN_Clasica(nn.Module):
     self.linear_puntuacion_inic = nn.Linear(hidden_size, 2)     # Sin puntuación || ¿
     self.linear_puntuacion_final = nn.Linear(hidden_size, 4)    # Sin puntuación || ? || , || . 
     self.linear_capitalizacion = nn.Linear(hidden_size, 4)      # minúscula || mayúscula inicial || algunas mayúsculas || toda mayúscula 
-
+    self.activation_output = nn.Softmax(dim=1)                  # activación SoftMax para el output
   def forward(self, x):
       x = self.embedding(x)
       x, _ = self.LSTM(x)
  
       # Cada bloque lineal produce logits (no probabilidades) para cada clase, en la tarea que le corresponde
       # No agrego softmax o algo del estilo porque luego usamos CrossEntropyLoss, que espera los logits.
-      score_puntuacion_inic = self.linear_puntuacion_inic(x)  
-      score_puntuacion_final = self.linear_puntuacion_final(x)   
-      score_capitalizacion = self.linear_capitalizacion(x)           
+      score_puntuacion_inic = self.activation_output(self.linear_puntuacion_inic(x))  
+      score_puntuacion_final = self.activation_output(self.linear_puntuacion_final(x))   
+      score_capitalizacion = self.activation_output(self.linear_capitalizacion(x))           
 
       return score_puntuacion_inic, score_puntuacion_final, score_capitalizacion
