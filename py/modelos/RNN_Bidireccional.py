@@ -40,10 +40,23 @@ class RNN_Bidireccional(nn.Module):
     ##### self.rnn1 = nn.RNN(embedding_dim, hidden_size, num_layers, batch_first=True, bidirectional=True)
     self.rnn2 = nn.RNN(hidden_size * 2, hidden_size, num_layers, batch_first=True, bidirectional=True)
 
+
+    self.LSTM_initial_punct = nn.sequential(nn.LSTM(input_size=hidden_size, hidden_size=hidden_size/3), 
+                                            nn.LSTM(input_size=hidden_size/3, hidden_size=hidden_size/6),
+                                            nn.LSTM(input_size=hidden_size/6, hidden_size=hidden_size/12))
+    
+    self.LSTM_final_punct = nn.sequential(nn.LSTM(input_size=hidden_size, hidden_size=hidden_size/3), 
+                                            nn.LSTM(input_size=hidden_size/3, hidden_size=hidden_size/6),
+                                            nn.LSTM(input_size=hidden_size/6, hidden_size=hidden_size/12))
+    
+    self.LSTM_capitalization = nn.sequential(nn.LSTM(input_size=hidden_size, hidden_size=hidden_size/3), 
+                                            nn.LSTM(input_size=hidden_size/3, hidden_size=hidden_size/12),
+                                            nn.LSTM(input_size=hidden_size/6, hidden_size=hidden_size/12))
+
     #usamos tres lineales para predecir la puntuación inicial, la final y la capitalización con la otra
-    self.linear_initial_punctuation = nn.Linear(hidden_size * 2, initial_punct_class_size)
-    self.linear_final_punctuation = nn.Linear(hidden_size * 2, final_punct_class_size)
-    self.linear_capitalization = nn.Linear(hidden_size * 2, cap_class_size)
+    #self.linear_initial_punctuation = nn.Linear(hidden_size * 2, initial_punct_class_size)
+    #self.linear_final_punctuation = nn.Linear(hidden_size * 2, final_punct_class_size)
+    #self.linear_capitalization = nn.Linear(hidden_size * 2, cap_class_size)
     
     #funciones de activación para las capas ocultas (ReLu) y para el ouput una softmax para cada set de predicciones
     self.activation_hidden = nn.ReLU()
@@ -60,13 +73,14 @@ class RNN_Bidireccional(nn.Module):
       x = self.activation_hidden(x)
 
     #x_in : hidden_size, x_out : |clases puntuación| + |clases capitalización|
-      x_punt_inicial = self.linear_initial_punctuation(x)
+      #x_punt_inicial = self.linear_initial_punctuation(x)
+      x_punt_inicial = self.LSTM_initial_punct(x)
       x_punt_inicial = self.activation_output(x_punt_inicial)
 
-      x_punt_final = self.linear_final_punctuation(x)
+      x_punt_final = self.LSTM_final_punct(x)
       x_punt_final = self.activation_output(x_punt_final)
 
-      x_cap = self.linear_capitalization(x)
+      x_cap = self.LSTM_capitalization(x)
       x_cap = self.activation_output(x_cap)
 
       #return torch.cat((x_punt_inicial,x_punt_final,x_cap), dim=0)
