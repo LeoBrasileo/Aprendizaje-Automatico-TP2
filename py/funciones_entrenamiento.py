@@ -146,4 +146,4 @@ def entrenar_modelo(modelo, datos_entrenamiento, datos_validacion, optimizador, 
 
     print("Entrenamiento completado!")
     # agrego el return para hacer curva de aprendizaje
-    return train_losses, val_losses, punt_inicial_train_loss, punt_final_train_loss, punt_cap_train_loss, punt_inicial_val_loss, punt_final_val_loss, punt_cap_val_loss 
+    return train_losses, val_losses, punt_inicial_train_losses, punt_final_train_losses, punt_cap_train_losses, punt_inicial_val_losses, punt_final_val_losses, punt_cap_val_losses 
