@@ -18,10 +18,8 @@ def ejecutar_epoch_entrenamiento(model, dataloader, optimizer, criterion):
             
         # Paso forward
         batch['token_ids'] = batch['token_ids'].to(device)
-        #print(f"token_ids shape: {batch['token_ids'].shape}, device: {batch['token_ids'].device}")
-        #print(f"target_punt_final shape: {batch['puntuacion_final'].shape}, device: {batch['puntuacion_final'].device}")
+        
         logits_punt_inic, logits_punt_final, logits_capitalizacion = model(batch['token_ids'])
-        #print(logits_capitalizacion.device())
 
         # Reshape de los logits para CE:
         logits_punt_inic = logits_punt_inic.reshape(-1, logits_punt_inic.size(-1))
@@ -38,9 +36,7 @@ def ejecutar_epoch_entrenamiento(model, dataloader, optimizer, criterion):
         loss_punt_final =  criterion(logits_punt_final, target_punt_final)
         loss_capitalizacion = criterion(logits_capitalizacion, target_capitalizacion)
 
-        loss = loss_punt_inic + loss_punt_final + loss_capitalizacion
-
-
+        loss = (1/3) * (loss_punt_inic + loss_punt_final + loss_capitalizacion)
 
         # Paso backward
         loss.backward()
@@ -51,7 +47,7 @@ def ejecutar_epoch_entrenamiento(model, dataloader, optimizer, criterion):
         optimizer.step()
         loss_total += loss.item()
 
-        loss_punt_inic_total += loss_punt_inic.item()
+        loss_punt_inic_total += loss_punt_inic.item() 
         loss_punt_final_total += loss_punt_final.item()
         loss_capitalizacion_total += loss_capitalizacion.item()
 
@@ -60,7 +56,11 @@ def ejecutar_epoch_entrenamiento(model, dataloader, optimizer, criterion):
 
 def evaluar_modelo(model, dataloader, criterion, epoch_actual, cant_epochs, device):     # El parámetro epoch_actual es sólo con el fin de printear y ver resultados del modelo en ciertas epochs.
     model.eval()
-    total_loss = 0
+    loss_total = 0
+    loss_punt_inic_total = 0
+    loss_punt_final_total = 0
+    loss_capitalizacion_total = 0
+
     device = next(model.parameters()).device
     
     with torch.no_grad():
@@ -81,8 +81,17 @@ def evaluar_modelo(model, dataloader, criterion, epoch_actual, cant_epochs, devi
             target_punt_final = batch['puntuacion_final'].reshape(-1).long()
             target_capitalizacion = batch['capitalizacion'].reshape(-1).long()
 
-            loss = criterion(output_punt_inic.float(), target_punt_inic) + criterion(output_punt_final.float(), target_punt_final) + criterion(output_capitalizacion.float(), target_capitalizacion)
-            total_loss += loss.item()
+            loss_punt_inic = criterion(output_punt_inic.float(), target_punt_inic)
+            loss_punt_final =  criterion(output_punt_final.float(), target_punt_final)
+            loss_capitalizacion = criterion(output_capitalizacion.float(), target_capitalizacion)
+
+            loss = loss_punt_inic + loss_punt_final + loss_capitalizacion
+
+            loss_total += loss.item()
+            loss_punt_inic_total += loss_punt_inic.item()
+            loss_punt_final_total += loss_punt_final.item()
+            loss_capitalizacion_total += loss_capitalizacion.item()
+
 
             # Imprimir las predicciones y targets del primer batch para visualizarlas. El único fin es visualizarlo.
             if (epoch_actual + 1) % max(1, cant_epochs // 10) == 0 and batch_idx == 0:
@@ -100,30 +109,33 @@ def evaluar_modelo(model, dataloader, criterion, epoch_actual, cant_epochs, devi
                     print("Target capitalización:        ", target_capitalizacion.cpu().tolist())
                     print("\n" + "-"*50 + "\n")
         
-    return total_loss / len(dataloader)
+    return loss_total / len(dataloader), loss_punt_inic_total / len(dataloader), loss_punt_final_total / len(dataloader), loss_capitalizacion_total / len(dataloader)
+
 
 
 def entrenar_modelo(modelo, datos_entrenamiento, datos_validacion, optimizador, criterio, cant_epochs, device='cpu'):
     train_losses = []
     val_losses = []
-    punt_inicial_losses = []
-    punt_final_losses = []
-    punt_cap_losses = []
+    punt_inicial_train_losses, punt_final_train_losses, punt_cap_train_losses = [], [], []
+    punt_inicial_val_losses, punt_final_val_losses, punt_cap_val_losses = [], [], []
+
     print("Iniciando entrenamiento...")
     print("-" * 50)
     for epoch in range(cant_epochs):
         # Entrenamiento
-        train_loss, punt_inicial_loss, punt_final_loss, punt_cap_loss = ejecutar_epoch_entrenamiento(modelo, datos_entrenamiento, optimizador, criterio)
+        train_loss, punt_inicial_train_loss, punt_final_train_loss, punt_cap_train_loss = ejecutar_epoch_entrenamiento(modelo, datos_entrenamiento, optimizador, criterio)
 
         train_losses.append(train_loss)
-        punt_inicial_losses.append(punt_inicial_loss)
-        punt_final_losses.append(punt_final_loss)
-        punt_cap_losses.append(punt_cap_loss)
+        punt_inicial_train_losses.append(punt_inicial_train_loss)
+        punt_final_train_losses.append(punt_final_train_loss)
+        punt_cap_train_losses.append(punt_cap_train_loss)
 
-        
-        
         # Validación
-        val_loss = evaluar_modelo(modelo, datos_validacion, criterio, epoch, cant_epochs, device=device)
+        val_loss, punt_inicial_val_loss, punt_final_val_loss, punt_cap_val_loss = evaluar_modelo(modelo, datos_validacion, criterio, epoch, cant_epochs, device=device)
+        
+        punt_inicial_val_losses.append(punt_inicial_val_loss)
+        punt_final_val_losses.append(punt_final_val_loss)
+        punt_cap_val_losses.append(punt_cap_val_loss)
         val_losses.append(val_loss)
         
         if (epoch + 1) % max(1, cant_epochs // 10) == 0:
@@ -134,4 +146,4 @@ def entrenar_modelo(modelo, datos_entrenamiento, datos_validacion, optimizador, 
 
     print("Entrenamiento completado!")
     # agrego el return para hacer curva de aprendizaje
-    return train_losses, val_losses 
+    return train_losses, val_losses, punt_inicial_train_loss, punt_final_train_loss, punt_cap_train_loss, punt_inicial_val_loss, punt_final_val_loss, punt_cap_val_loss 
