@@ -29,7 +29,7 @@ class RNN_Bidireccional(nn.Module):
         super(RNN_Bidireccional, self).__init__()
 
         if bert_embedding:
-            self.embedding = get_multilingual_token_embedding  # should be a callable!
+            self.embedding = get_multilingual_token_embedding
         else:
             self.embedding = nn.Embedding(num_embeddings=vocab_size, embedding_dim=embedding_dim)      
 
@@ -37,6 +37,7 @@ class RNN_Bidireccional(nn.Module):
         self.rnn2 = nn.RNN(hidden_size * 2, hidden_size, num_layers, batch_first=True, bidirectional=True)
 
         # each LSTM stack manually (not using Sequential)
+        '''
         self.lstm_init_1 = nn.LSTM(hidden_size * 2, hidden_size // 3, batch_first=True)
         self.lstm_init_2 = nn.LSTM(hidden_size // 3, hidden_size // 12, batch_first=True)
         self.linear_init = nn.Linear(hidden_size // 12, initial_punct_class_size)
@@ -48,6 +49,15 @@ class RNN_Bidireccional(nn.Module):
         self.lstm_cap_1 = nn.LSTM(hidden_size * 2, hidden_size // 3, batch_first=True)
         self.lstm_cap_2 = nn.LSTM(hidden_size // 3, hidden_size // 12, batch_first=True)
         self.linear_cap = nn.Linear(hidden_size // 12, cap_class_size)
+      '''
+        
+        self.initial_punct_recurrent = nn.RNN(hidden_size*2, initial_punct_class_size, batch_first=True, bidirectional=False)
+
+        self.final_punct_recurrent = nn.RNN(hidden_size*2, final_punct_class_size, batch_first=True, bidirectional=False)
+
+        self.capitalization_recurrent = nn.RNN(hidden_size*2, cap_class_size, batch_first=True, bidirectional=False)
+
+
 
         self.activation_hidden = nn.ReLU()
         self.activation_output = nn.Softmax(dim=-1)
@@ -59,22 +69,30 @@ class RNN_Bidireccional(nn.Module):
         x, _ = self.rnn2(x)
         x = self.activation_hidden(x)
 
+        out_init, _ = self.initial_punct_recurrent(x)
+        out_final, _ = self.final_punct_recurrent(x)
+        out_cap, _ = self.capitalization_recurrent(x)
+
+        '''
         # Initial punctuation
         out_init, _ = self.lstm_init_1(x)
         out_init, _ = self.lstm_init_2(out_init)
         out_init = self.linear_init(out_init)
-        out_init = self.activation_output(out_init)
+        
 
         # Final punctuation
         out_final, _ = self.lstm_final_1(x)
         out_final, _ = self.lstm_final_2(out_final)
         out_final = self.linear_final(out_final)
-        out_final = self.activation_output(out_final)
+        
 
         # Capitalization
         out_cap, _ = self.lstm_cap_1(x)
         out_cap, _ = self.lstm_cap_2(out_cap)
         out_cap = self.linear_cap(out_cap)
+        '''
+        out_init = self.activation_output(out_init)
+        out_final = self.activation_output(out_final)
         out_cap = self.activation_output(out_cap)
-
+        
         return out_init, out_final, out_cap
