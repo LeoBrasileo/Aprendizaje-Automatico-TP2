@@ -42,7 +42,7 @@ def ejecutar_epoch_entrenamiento(model, dataloader, optimizer, criterion):
         loss_punt_final =  criterion(logits_punt_final, target_punt_final)
         loss_capitalizacion = criterion(logits_capitalizacion, target_capitalizacion)
 
-        loss = (loss_punt_inic + loss_punt_final + loss_capitalizacion)/3
+        loss = (loss_punt_inic + loss_punt_final + loss_capitalizacion)
 
         optimizer.zero_grad()
         # Paso backward
@@ -78,7 +78,8 @@ def evaluar_modelo(model, dataloader, criterion, epoch_actual, cant_epochs, devi
             
             batch['token_ids'] = batch['token_ids'].to(device)
             output_punt_inic, output_punt_final, output_capitalizacion = model(batch['token_ids'])
-
+            print(output_capitalizacion.shape)
+            print(batch['capitalizacion'].shape)
             # Reshape para usar en CE
             output_punt_inic = output_punt_inic.reshape(-1, output_punt_inic.size(-1))
             output_punt_final = output_punt_final.reshape(-1, output_punt_final.size(-1))
@@ -92,7 +93,7 @@ def evaluar_modelo(model, dataloader, criterion, epoch_actual, cant_epochs, devi
             loss_punt_final =  criterion(output_punt_final.float(), target_punt_final)
             loss_capitalizacion = criterion(output_capitalizacion.float(), target_capitalizacion)
 
-            loss = loss_punt_inic + loss_punt_final + loss_capitalizacion
+            loss = (loss_punt_inic + loss_punt_final + loss_capitalizacion)
 
             loss_total += loss.item()
             loss_punt_inic_total += loss_punt_inic.item()
@@ -107,13 +108,13 @@ def evaluar_modelo(model, dataloader, criterion, epoch_actual, cant_epochs, devi
                     pred_puntuacion_final = torch.argmax(output_punt_final, dim=-1)  
                     pred_capitalizacion = torch.argmax(output_capitalizacion, dim=-1)  
 
-                    print("Predicción puntuación inicial:", pred_puntuacion_inicial.cpu().apply_(lambda x : padding(x,2)).tolist())
+                    print("Predicción puntuación inicial:", pred_puntuacion_inicial.cpu().tolist())
                     print("Target puntuación inicial:   ", target_punt_inic.cpu().tolist())
                     print()
-                    print("Predicción puntuación final:  ", pred_puntuacion_final.cpu().apply_(lambda x : padding(x,4)).tolist())
+                    print("Predicción puntuación final:  ", pred_puntuacion_final.cpu().tolist())
                     print("Target puntuación final:      ", target_punt_final.cpu().tolist())
                     print()
-                    print("Predicción capitalización:    ", pred_capitalizacion.cpu().apply_(lambda x : padding(x,4)).tolist())
+                    print("Predicción capitalización:    ", pred_capitalizacion.cpu().tolist())
                     print("Target capitalización:        ", target_capitalizacion.cpu().tolist())
                     print("\n" + "-"*50 + "\n")
         
