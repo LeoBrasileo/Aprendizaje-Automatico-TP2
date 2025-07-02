@@ -30,15 +30,15 @@ def predecir_para_tokens(model, inputs: dict[str, list[int | str]]):
             token_id: lista con todos los token_id,
             token: lista con todos los tokens
     """
+    device = next(model.parameters()).device
     # Agrupamos por instancia los tokens y token_ids
     inputs_por_instancia = defaultdict(lambda: {'token_ids': [], 'tokens': []})
-    for input in inputs:
-        instancia_ids = input['instancia_id']
-        token_ids = input['token_id']
-        tokens = input['token']
-        for inst_id, token_id, token in zip(instancia_ids, token_ids, tokens):
-            inputs_por_instancia[inst_id]['token_ids'].append(token_id)
-            inputs_por_instancia[inst_id]['tokens'].append(token)
+    instancia_ids = inputs['instancia_id']
+    token_ids = inputs['token_id']
+    tokens = inputs['token']
+    for inst_id, token_id, token in zip(instancia_ids, token_ids, tokens):
+        inputs_por_instancia[inst_id]['token_ids'].append(token_id)
+        inputs_por_instancia[inst_id]['tokens'].append(token)
 
     model.eval()
 
@@ -48,7 +48,9 @@ def predecir_para_tokens(model, inputs: dict[str, list[int | str]]):
         token_ids = datos['token_ids']
         tokens = datos['tokens']
 
-        tensor_token_ids = torch.tensor([token_ids], dtype=torch.long)  
+        token_ids = [int(tid) for tid in datos['token_ids']]
+
+        tensor_token_ids = torch.tensor([token_ids], dtype=torch.long, device=device)  
 
         with torch.no_grad():
             logits_punt_inic, logits_punt_final, logits_capitalizacion = model(tensor_token_ids)
