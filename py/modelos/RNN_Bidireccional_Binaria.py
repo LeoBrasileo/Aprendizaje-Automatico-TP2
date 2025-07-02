@@ -48,6 +48,6 @@ class RNN_Bidireccional(nn.Module):
         x = self.embedding(x)
         x, _ = self.rnn(x)
         x, _ = self.foward_current(x)
-        x = self.activation_output(x)
+        #x = self.activation_output(x)
 
         return x
