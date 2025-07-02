@@ -6,7 +6,7 @@ def padding(x, pad_index):
     res = -100
   return res
 
-def criterion_batch_sequence(batch_logits, batch_targets, criterion):
+def criterion_batch_sequence(batch_logits, batch_targets, criterion, task_offset, class_size):
   loss = 0
   batch_size = batch_targets.shape[0]
   for idx in range(batch_targets.shape[1]):
@@ -31,23 +31,22 @@ def ejecutar_epoch_entrenamiento(model, dataloader, optimizer, criterion):
         # Paso forward
         batch['token_ids'] = batch['token_ids'].to(device)
         
-        logits_punt_inic, logits_punt_final, logits_capitalizacion = model(batch['token_ids'])
-        
-        
-        # Reshape de los logits para CE:
-        logits_punt_inic = logits_punt_inic.reshape(-1, logits_punt_inic.size(-1))
-        logits_punt_final = logits_punt_final.reshape(-1, logits_punt_final.size(-1))
-        logits_capitalizacion = logits_capitalizacion.reshape(-1, logits_capitalizacion.size(-1))
+        logits_clasifiacion = model(batch['token_ids'])
 
         # Definiendo los targets (y reshape para CE):
-        target_punt_inic = batch['puntuacion_inicial'].long().reshape(-1)
-        target_punt_final = batch['puntuacion_final'].long().reshape(-1)
-        target_capitalizacion = batch['capitalizacion'].long().reshape(-1)
+        target_punt_inic = batch['puntuacion_inicial'].long()#.reshape(-1)
+        target_punt_final = batch['puntuacion_final'].long()#.reshape(-1)
+        target_capitalizacion = batch['capitalizacion'].long()#.reshape(-1)
 
         # Calculamos la loss como la suma de las 3 losses
-        loss_punt_inic = criterion(logits_punt_inic, target_punt_inic)
-        loss_punt_final =  criterion(logits_punt_final, target_punt_final)
-        loss_capitalizacion = criterion(logits_capitalizacion, target_capitalizacion)
+        loss_punt_inic = 0
+        loss_punt_final = 0
+        loss_capitalizacion = 0
+        batch_size = target_punt_inic.shape[0]
+        for idx in range(target_punt_inic.shape[1]):
+            loss_punt_inic += criterion(logits_clasifiacion[:, idx, 0:2], target_punt_inic[:, idx]).sum()
+            loss_punt_final += criterion(logits_clasifiacion[:, idx, 2:6], target_punt_final[:, idx]).sum()
+            loss_capitalizacion += criterion(logits_clasifiacion[:, idx, 6:10], target_capitalizacion[:, idx]).sum()
 
         loss = (loss_punt_inic + loss_punt_final + loss_capitalizacion)
 
@@ -84,22 +83,27 @@ def evaluar_modelo(model, dataloader, criterion, epoch_actual, cant_epochs, devi
                     batch[key] = batch[key].to(device)
             
             batch['token_ids'] = batch['token_ids'].to(device)
-            output_punt_inic, output_punt_final, output_capitalizacion = model(batch['token_ids'])
+            logits_clasifiacion = model(batch['token_ids'])
             print(output_capitalizacion.shape)
             print(batch['capitalizacion'].shape)
-            # Reshape para usar en CE
-            output_punt_inic = output_punt_inic.reshape(-1, output_punt_inic.size(-1))
-            output_punt_final = output_punt_final.reshape(-1, output_punt_final.size(-1))
-            output_capitalizacion = output_capitalizacion.reshape(-1, output_capitalizacion.size(-1))
             
-            target_punt_inic = batch['puntuacion_inicial'].long().reshape(-1)
-            target_punt_final = batch['puntuacion_final'].long().reshape(-1)
-            target_capitalizacion = batch['capitalizacion'].long().reshape(-1)
+            target_punt_inic = batch['puntuacion_inicial'].long()#.reshape(-1)
+            target_punt_final = batch['puntuacion_final'].long()#.reshape(-1)
+            target_capitalizacion = batch['capitalizacion'].long()#.reshape(-1)
 
-            loss_punt_inic = criterion(output_punt_inic.float(), target_punt_inic)
-            loss_punt_final =  criterion(output_punt_final.float(), target_punt_final)
-            loss_capitalizacion = criterion(output_capitalizacion.float(), target_capitalizacion)
+            logits_punt_inicial = logits_clasifiacion[:, :, 0:2]
+            logits_punt_final = logits_clasifiacion[:, :, 2:6]
+            logits_cap = logits_clasifiacion[:, :, 6:10]
 
+            # Calculamos la loss como la suma de las 3 losses
+            loss_punt_inic = 0
+            loss_punt_final = 0
+            loss_capitalizacion = 0
+            batch_size = target_punt_inic.shape[0]
+            for idx in range(target_punt_inic.shape[1]):
+                loss_punt_inic += criterion(logits_punt_inicial[:, idx, :], target_punt_inic[:, idx]).sum()
+                loss_punt_final += criterion(logits_punt_final[:, idx, :], target_punt_final[:, idx]).sum()
+                loss_capitalizacion += criterion(logits_cap[:, idx, :], target_capitalizacion[:, idx]).sum()
             loss = (loss_punt_inic + loss_punt_final + loss_capitalizacion)
 
             loss_total += loss.item()
@@ -110,10 +114,11 @@ def evaluar_modelo(model, dataloader, criterion, epoch_actual, cant_epochs, devi
 
             # Imprimir las predicciones y targets del primer batch para visualizarlas. El único fin es visualizarlo.
             if (epoch_actual + 1) % max(1, cant_epochs // 10) == 0 and batch_idx == 0:
-
-                    pred_puntuacion_inicial = torch.argmax(output_punt_inic, dim=-1) 
-                    pred_puntuacion_final = torch.argmax(output_punt_final, dim=-1)  
-                    pred_capitalizacion = torch.argmax(output_capitalizacion, dim=-1)  
+                    pred_puntuacion_inicial, pred_puntuacion_final, pred_capitalizacion = torch.Tensor()
+                    for i in range(logits_clasificacion.shape[0]) 
+                        pred_puntuacion_inicial.append( torch.argmax(logits_punt_inicial[i], dim=-1) ) 
+                        pred_puntuacion_final.append( torch.argmax(logits_punt_final[i], dim=-1) )
+                        pred_capitalizacion.append( torch.argmax(logits_cap[i], dim=-1) )
 
                     print("Predicción puntuación inicial:", pred_puntuacion_inicial.cpu().tolist())
                     print("Target puntuación inicial:   ", target_punt_inic.cpu().tolist())
