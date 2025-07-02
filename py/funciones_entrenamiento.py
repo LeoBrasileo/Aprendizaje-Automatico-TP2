@@ -36,7 +36,7 @@ def ejecutar_epoch_entrenamiento(model, dataloader, optimizer, criterion):
         loss_punt_final =  criterion(logits_punt_final, target_punt_final)
         loss_capitalizacion = criterion(logits_capitalizacion, target_capitalizacion)
 
-        loss = (1/3) * (loss_punt_inic + loss_punt_final + loss_capitalizacion)
+        loss = (loss_punt_inic + loss_punt_final + loss_capitalizacion)
 
         # Paso backward
         loss.backward()
@@ -85,7 +85,7 @@ def evaluar_modelo(model, dataloader, criterion, epoch_actual, cant_epochs, devi
             loss_punt_final =  criterion(output_punt_final.float(), target_punt_final)
             loss_capitalizacion = criterion(output_capitalizacion.float(), target_capitalizacion)
 
-            loss = loss_punt_inic + loss_punt_final + loss_capitalizacion
+            loss = (loss_punt_inic + loss_punt_final + loss_capitalizacion)
 
             loss_total += loss.item()
             loss_punt_inic_total += loss_punt_inic.item()
