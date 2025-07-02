@@ -1,11 +1,5 @@
 import torch
 
-def padding(x, pad_index):
-  res = x
-  if x == pad_index:
-    res = -100
-  return res
-
 def ejecutar_epoch_entrenamiento(model, dataloader, optimizer, criterion):
     device = next(model.parameters()).device
     model.train()
@@ -15,6 +9,7 @@ def ejecutar_epoch_entrenamiento(model, dataloader, optimizer, criterion):
     loss_capitalizacion_total = 0
 
     for batch in dataloader:
+        optimizer.zero_grad()
 
         # Cargo los datos al device que estemos utlizando (caso de estar usando GPU)
         for key in batch:
@@ -25,17 +20,16 @@ def ejecutar_epoch_entrenamiento(model, dataloader, optimizer, criterion):
         batch['token_ids'] = batch['token_ids'].to(device)
         
         logits_punt_inic, logits_punt_final, logits_capitalizacion = model(batch['token_ids'])
-        
-        
+
         # Reshape de los logits para CE:
         logits_punt_inic = logits_punt_inic.reshape(-1, logits_punt_inic.size(-1))
         logits_punt_final = logits_punt_final.reshape(-1, logits_punt_final.size(-1))
         logits_capitalizacion = logits_capitalizacion.reshape(-1, logits_capitalizacion.size(-1))
 
         # Definiendo los targets (y reshape para CE):
-        target_punt_inic = batch['puntuacion_inicial'].long().reshape(-1)
-        target_punt_final = batch['puntuacion_final'].long().reshape(-1)
-        target_capitalizacion = batch['capitalizacion'].long().reshape(-1)
+        target_punt_inic = batch['puntuacion_inicial'].reshape(-1).long()
+        target_punt_final = batch['puntuacion_final'].reshape(-1).long()
+        target_capitalizacion = batch['capitalizacion'].reshape(-1).long()
 
         # Calculamos la loss como la suma de las 3 losses
         loss_punt_inic = criterion(logits_punt_inic, target_punt_inic)
@@ -44,7 +38,6 @@ def ejecutar_epoch_entrenamiento(model, dataloader, optimizer, criterion):
 
         loss = (loss_punt_inic + loss_punt_final + loss_capitalizacion)
 
-        optimizer.zero_grad()
         # Paso backward
         loss.backward()
 
@@ -78,16 +71,15 @@ def evaluar_modelo(model, dataloader, criterion, epoch_actual, cant_epochs, devi
             
             batch['token_ids'] = batch['token_ids'].to(device)
             output_punt_inic, output_punt_final, output_capitalizacion = model(batch['token_ids'])
-            print(output_capitalizacion.shape)
-            print(batch['capitalizacion'].shape)
+
             # Reshape para usar en CE
             output_punt_inic = output_punt_inic.reshape(-1, output_punt_inic.size(-1))
             output_punt_final = output_punt_final.reshape(-1, output_punt_final.size(-1))
             output_capitalizacion = output_capitalizacion.reshape(-1, output_capitalizacion.size(-1))
             
-            target_punt_inic = batch['puntuacion_inicial'].long().reshape(-1)
-            target_punt_final = batch['puntuacion_final'].long().reshape(-1)
-            target_capitalizacion = batch['capitalizacion'].long().reshape(-1)
+            target_punt_inic = batch['puntuacion_inicial'].reshape(-1).long()
+            target_punt_final = batch['puntuacion_final'].reshape(-1).long()
+            target_capitalizacion = batch['capitalizacion'].reshape(-1).long()
 
             loss_punt_inic = criterion(output_punt_inic.float(), target_punt_inic)
             loss_punt_final =  criterion(output_punt_final.float(), target_punt_final)
@@ -103,10 +95,9 @@ def evaluar_modelo(model, dataloader, criterion, epoch_actual, cant_epochs, devi
 
             # Imprimir las predicciones y targets del primer batch para visualizarlas. El único fin es visualizarlo.
             if (epoch_actual + 1) % max(1, cant_epochs // 10) == 0 and batch_idx == 0:
-
-                    pred_puntuacion_inicial = torch.argmax(output_punt_inic, dim=-1) 
-                    pred_puntuacion_final = torch.argmax(output_punt_final, dim=-1)  
-                    pred_capitalizacion = torch.argmax(output_capitalizacion, dim=-1)  
+                    pred_puntuacion_inicial = torch.argmax(output_punt_inic, dim=-1)  
+                    pred_puntuacion_final = torch.argmax(output_punt_final, dim=-1)
+                    pred_capitalizacion = torch.argmax(output_capitalizacion, dim=-1)
 
                     print("Predicción puntuación inicial:", pred_puntuacion_inicial.cpu().tolist())
                     print("Target puntuación inicial:   ", target_punt_inic.cpu().tolist())
