@@ -36,7 +36,7 @@ class RNN_Bidireccional(nn.Module):
 
         self.rnn = nn.RNN(embedding_dim, hidden_size, num_layers, batch_first=True, bidirectional=True)
                    
-        self.foward_recurrent = nn.RNN(hidden_size*2, initial_punct_class_size + final_punct_class_size + cap_class_size, batch_first=True, bidirectional=False)
+        self.foward_recurrent = nn.RNN(hidden_size*2, initial_punct_class_size + final_punct_class_size + cap_class_size + 1, batch_first=True, bidirectional=False)
 
         self.cap_class_size = cap_class_size
         self.final_punt_class_size = final_punct_class_size
