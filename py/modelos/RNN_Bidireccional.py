@@ -33,8 +33,7 @@ class RNN_Bidireccional(nn.Module):
         else:
             self.embedding = nn.Embedding(num_embeddings=vocab_size, embedding_dim=embedding_dim)      
 
-        self.rnn1 = nn.RNN(embedding_dim, hidden_size, num_layers, batch_first=True, bidirectional=True)
-        self.rnn2 = nn.RNN(hidden_size * 2, hidden_size, num_layers, batch_first=True, bidirectional=True)
+        self.rnn = nn.RNN(embedding_dim, hidden_size, num_layers, batch_first=True, bidirectional=True)
 
         # each LSTM stack manually (not using Sequential)
         '''
@@ -64,35 +63,10 @@ class RNN_Bidireccional(nn.Module):
 
     def forward(self, x):
         x = self.embedding(x)
-        x, _ = self.rnn1(x)
-        x = self.activation_hidden(x)
-        x, _ = self.rnn2(x)
-        x = self.activation_hidden(x)
+        x, _ = self.rnn(x)
 
         out_init, _ = self.initial_punct_recurrent(x)
         out_final, _ = self.final_punct_recurrent(x)
         out_cap, _ = self.capitalization_recurrent(x)
-
-        '''
-        # Initial punctuation
-        out_init, _ = self.lstm_init_1(x)
-        out_init, _ = self.lstm_init_2(out_init)
-        out_init = self.linear_init(out_init)
-        
-
-        # Final punctuation
-        out_final, _ = self.lstm_final_1(x)
-        out_final, _ = self.lstm_final_2(out_final)
-        out_final = self.linear_final(out_final)
-        
-
-        # Capitalization
-        out_cap, _ = self.lstm_cap_1(x)
-        out_cap, _ = self.lstm_cap_2(out_cap)
-        out_cap = self.linear_cap(out_cap)
-        '''
-        out_init = self.activation_output(out_init)
-        out_final = self.activation_output(out_final)
-        out_cap = self.activation_output(out_cap)
         
         return out_init, out_final, out_cap
