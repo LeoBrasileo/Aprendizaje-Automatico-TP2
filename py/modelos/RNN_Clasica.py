@@ -55,11 +55,5 @@ class RNN_Clasica(nn.Module):
       x_initial_punct, _ = self.RNN_puntuacion_inic(x)
       x_final_punct, _ = self.RNN_puntuacion_final(x)
       x_cap, _ = self.RNN_capitalizacion(x)
- 
-      # Cada bloque lineal produce logits (no probabilidades) para cada clase, en la tarea que le corresponde
-      # No agrego softmax o algo del estilo porque luego usamos CrossEntropyLoss, que espera los logits.
-      score_puntuacion_inic = self.activation_output(x_initial_punct)
-      score_puntuacion_final = self.activation_output(x_final_punct)
-      score_capitalizacion = self.activation_output(x_cap)
 
-      return score_puntuacion_inic, score_puntuacion_final, score_capitalizacion
+      return x_initial_punct, x_final_punct, x_cap
