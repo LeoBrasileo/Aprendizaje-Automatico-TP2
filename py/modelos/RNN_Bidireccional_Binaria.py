@@ -1,3 +1,4 @@
+from matplotlib.pyplot import xlabel
 import torch
 import torch.nn as nn
 from transformers import BertTokenizer, BertModel
@@ -35,26 +36,18 @@ class RNN_Bidireccional(nn.Module):
 
         self.rnn = nn.RNN(embedding_dim, hidden_size, num_layers, batch_first=True, bidirectional=True)
                    
-        self.foward_recurrent = nn.RNN(hidden_size*2, initial_punct_class_size + final_punt_class_size + cap_class_size, batch_first=True, bidirectional=False)
+        self.foward_recurrent = nn.RNN(hidden_size*2, initial_punct_class_size + final_punct_class_size + cap_class_size, batch_first=True, bidirectional=False)
 
         self.cap_class_size = cap_class_size
-        self.final_punt_class_size = final_punt_class_size
-        self.initial_punct_class_size = initial_punt_class_size
+        self.final_punt_class_size = final_punct_class_size
+        self.initial_punct_class_size = initial_punct_class_size
 
-
-        self.activation_hidden = nn.ReLU()
         self.activation_output = nn.Sigmoid(dim=-1)
 
     def forward(self, x):
         x = self.embedding(x)
         x, _ = self.rnn(x)
-        x = self.activation_hidden(x)
-
         x, _ = self.foward_current(x)
-      
         x = self.activation_output(x)
-        out_init = x[:self.initial_punt_class_size]
-        out_final = x[self.initial_punt_class_size : self.final_punt_class_size]
-        out_cap = x[self.final_punt_class_size : self.cap_class_size]
-        
-        return out_init, out_final, out_cap
+
+        return x
